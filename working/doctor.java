@@ -8,11 +8,11 @@ import java.util.Scanner;
 
 public class Doctor 
 {
-    private Connection connection;
+    private Connection c;
 
-    public Doctor(Connection connection)
+    public Doctor(Connection c)
     {
-        this.connection = connection;
+        this.c = c;
     }
 
     public void viewDoctors()
@@ -20,12 +20,12 @@ public class Doctor
         String query = "select * from doctors";
         try
         {
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            PreparedStatement preparedStatement = c.prepareStatement(query);
             ResultSet resultSet = preparedStatement.executeQuery();
             System.out.println("Doctors: ");
-            System.out.println("------------------------------------------------------");
+            System.out.println("+------------+--------------------+------------------+");
             System.out.println("| Doctor Id  | Name               | Specialization   |");
-            System.out.println("------------------------------------------------------");
+            System.out.println("+------------+--------------------+------------------+");
             while(resultSet.next())
             {
                 int id = resultSet.getInt("id");
@@ -47,7 +47,7 @@ public class Doctor
         String query = "SELECT * FROM doctors WHERE id = ?";
         try
         {
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            PreparedStatement preparedStatement = c.prepareStatement(query);
             preparedStatement.setInt(1, id);
             ResultSet resultSet = preparedStatement.executeQuery();
             if(resultSet.next())
