@@ -9,7 +9,7 @@ public class HospitalManagementSystem
     private static final String username = "root";
     private static final String password = "Admin@123";
 
-    public static void main(String[] args) 
+    public static void main(String args[]) 
     {
         try
         {
@@ -19,12 +19,12 @@ public class HospitalManagementSystem
         {
             e.printStackTrace();
         }
-        Scanner scanner = new Scanner(System.in);
+        Scanner sc = new Scanner(System.in);
         try
         {
-            Connection connection = DriverManager.getConnection(url, username, password);
-            Patient patient = new Patient(connection, scanner);
-            Doctor doctor = new Doctor(connection);
+            Connection c = DriverManager.getConnection(url, username, password);
+            Patient p = new Patient(c, sc);
+            Doctor d = new Doctor(c);
             while(true)
             {
                 System.out.println("HOSPITAL MANAGEMENT SYSTEM ");
@@ -34,33 +34,38 @@ public class HospitalManagementSystem
                 System.out.println("4. Book Appointment");
                 System.out.println("5. Exit");
                 System.out.println("Enter your choice: ");
-                int choice = scanner.nextInt();
+                int choice = sc.nextInt();
 
                 switch(choice)
                 {
+                    // Add Patient
                     case 1:
-                        // Add Patient
-                        patient.addPatient();
+                        p.addPatient();
                         System.out.println();
                         break;
+                        
+                    // View Patient
                     case 2:
-                        // View Patient
-                        patient.viewPatients();
+                        p.viewPatients();
                         System.out.println();
                         break;
+
+                    // View Doctors
                     case 3:
-                        // View Doctors
-                        doctor.viewDoctors();
+                        d.viewDoctors();
                         System.out.println();
                         break;
+
+                    // Book Appointment
                     case 4:
-                        // Book Appointment
-                        bookAppointment(patient, doctor, connection, scanner);
+                        bookAppointment(p, d, c, sc);
                         System.out.println();
                         break;
+                        
                     case 5:
                         System.out.println("THANK YOU! FOR USING HOSPITAL MANAGEMENT SYSTEM!!");
                         return;
+                        
                     default:
                         System.out.println("Enter valid choice!!!");
                         break;
@@ -76,22 +81,22 @@ public class HospitalManagementSystem
     }
 
 
-    public static void bookAppointment(Patient patient, Doctor doctor, Connection connection, Scanner scanner)
+    public static void bookAppointment(Patient p, Doctor d, Connection c, Scanner sc)
     {
         System.out.print("Enter Patient Id: ");
-        int patientId = scanner.nextInt();
+        int patientId = sc.nextInt();
         System.out.print("Enter Doctor Id: ");
-        int doctorId = scanner.nextInt();
+        int doctorId = sc.nextInt();
         System.out.print("Enter appointment date (YYYY-MM-DD): ");
-        String appointmentDate = scanner.next();
-        if(patient.getPatientById(patientId) && doctor.getDoctorById(doctorId))
+        String appointmentDate = sc.next();
+        if(p.getPatientById(patientId) && d.getDoctorById(doctorId))
         {
-            if(checkDoctorAvailability(doctorId, appointmentDate, connection))
+            if(checkDoctorAvailability(doctorId, appointmentDate, c))
             {
                 String appointmentQuery = "INSERT INTO appointments(patient_id, doctor_id, appointment_date) VALUES(?, ?, ?)";
                 try 
                 {
-                    PreparedStatement preparedStatement = connection.prepareStatement(appointmentQuery);
+                    PreparedStatement preparedStatement = c.prepareStatement(appointmentQuery);
                     preparedStatement.setInt(1, patientId);
                     preparedStatement.setInt(2, doctorId);
                     preparedStatement.setString(3, appointmentDate);
@@ -110,22 +115,22 @@ public class HospitalManagementSystem
                 System.out.println("Doctor not available on this date!!");
         }
         else
-            System.out.println("Either doctor or patient doesn't exist!!!");
+            System.out.println("Either d or p doesn't exist!!!");
     }
 
-    public static boolean checkDoctorAvailability(int doctorId, String appointmentDate, Connection connection)
+    public static boolean checkDoctorAvailability(int doctorId, String appointmentDate, Connection c)
     {
         String query = "SELECT COUNT(*) FROM appointments WHERE doctor_id = ? AND appointment_date = ?";
         try
         {
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            PreparedStatement preparedStatement = c.prepareStatement(query);
             preparedStatement.setInt(1, doctorId);
             preparedStatement.setString(2, appointmentDate);
             ResultSet resultSet = preparedStatement.executeQuery();
             if(resultSet.next())
             {
                 int count = resultSet.getInt(1);
-                if(count==0)
+                if(count == 0)
                     return true;
                 else
                     return false;
